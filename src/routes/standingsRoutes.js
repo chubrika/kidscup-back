@@ -4,7 +4,9 @@ import { protect } from '../middleware/index.js';
 
 const router = Router();
 
-router.use(protect);
 router.get('/', standingsController.getStandings);
+
+router.use(protect);
+// future protected standings routes (e.g. recalculate) here
 
 export default router;
