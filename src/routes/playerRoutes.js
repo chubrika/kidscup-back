@@ -30,10 +30,11 @@ const updateValidation = [
   body('teamId').optional().isMongoId(),
 ];
 
-router.use(protect);
-
+// Public GET routes (no auth)
 router.get('/', playerController.getPlayers);
 router.get('/:id', idParam, validate, playerController.getPlayerById);
+
+router.use(protect);
 router.post('/', createValidation, validate, playerController.createPlayer);
 router.put('/:id', updateValidation, validate, playerController.updatePlayer);
 router.delete('/:id', idParam, validate, playerController.deletePlayer);

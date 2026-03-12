@@ -36,10 +36,11 @@ const updateValidation = [
   body('ageCategory').optional().trim().custom(ageCategoryValidator),
 ];
 
-router.use(protect);
-
+// Public GET routes (no auth)
 router.get('/', teamController.getTeams);
 router.get('/:id', idParam, validate, teamController.getTeamById);
+
+router.use(protect);
 router.post('/', createValidation, validate, teamController.createTeam);
 router.put('/:id', updateValidation, validate, teamController.updateTeam);
 router.delete('/:id', idParam, validate, teamController.deleteTeam);

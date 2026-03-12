@@ -9,9 +9,10 @@ const createValidation = [
   body('name').trim().notEmpty().withMessage('Category name is required'),
 ];
 
-router.use(protect);
-
+// Public: list categories (for frontend nav)
 router.get('/', categoryController.getCategories);
+
+router.use(protect);
 router.post('/', createValidation, validate, categoryController.createCategory);
 
 export default router;
