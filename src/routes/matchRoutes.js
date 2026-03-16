@@ -32,10 +32,10 @@ const updateValidation = [
   body('scoreAway').optional().isInt({ min: 0 }),
 ];
 
-router.use(protect);
 
 router.get('/', matchController.getMatches);
 router.get('/:id', idParam, validate, matchController.getMatchById);
+router.use(protect);
 router.post('/', createValidation, validate, matchController.createMatch);
 router.put('/:id', updateValidation, validate, matchController.updateMatch);
 router.delete('/:id', idParam, validate, matchController.deleteMatch);
