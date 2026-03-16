@@ -20,9 +20,9 @@ const playerSchema = new mongoose.Schema(
     },
     position: {
       type: String,
+      required: true,
       trim: true,
-      enum: ['PG', 'SG', 'SF', 'PF', 'C', ''],
-      default: '',
+      enum: ['PG', 'SG', 'SF', 'PF', 'C'],
     },
     birthDate: {
       type: Date,
