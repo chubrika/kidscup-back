@@ -4,7 +4,7 @@ import { User, Category, Team, Player, Match } from '../models/index.js';
 
 dotenv.config();
 
-const MONGODB_URI = process.env.MONGODB_URI || 'mongodb://localhost:27017/kidscup';
+const MONGODB_URI = process.env.MONGODB_URI || 'mongodb+srv://chubro15_db_user:Lv2k9pjYkRm8752z@kidscup.ykzzzon.mongodb.net/kidscup';
 
 async function seed() {
   await mongoose.connect(MONGODB_URI);
@@ -23,8 +23,18 @@ async function seed() {
   });
   console.log('Created user:', admin.email);
 
-  const u12 = await Category.create({ name: 'U12' });
-  const u14 = await Category.create({ name: 'U14' });
+  const u12 = await Category.create({
+    name: 'U12',
+    minAge: 8,
+    maxAge: 12,
+    description: 'Under 12 (ages 11–12)',
+  });
+  const u14 = await Category.create({
+    name: 'U14',
+    minAge: 10,
+    maxAge: 14,
+    description: 'Under 14 (ages 13–14)',
+  });
   console.log('Created categories: U12, U14');
 
   const teams = await Team.insertMany([
