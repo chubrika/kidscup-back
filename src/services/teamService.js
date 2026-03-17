@@ -3,14 +3,15 @@ import { AppError } from '../utils/AppError.js';
 import { moveTempObjectToTeam } from './r2Service.js';
 
 export const getTeams = async (query = {}) => {
-  const { ageCategory } = query;
+  const { ageCategory, season } = query;
   const filter = {};
   if (ageCategory) filter.ageCategory = ageCategory;
-  return Team.find(filter).populate('ageCategory').sort({ createdAt: -1 }).lean();
+  if (season) filter.season = season;
+  return Team.find(filter).populate('ageCategory').populate('season').sort({ createdAt: -1 }).lean();
 };
 
 export const getTeamById = async (id) => {
-  const team = await Team.findById(id).populate('ageCategory');
+  const team = await Team.findById(id).populate('ageCategory').populate('season');
   if (!team) throw new AppError('Team not found.', 404);
   return team;
 };
@@ -18,6 +19,7 @@ export const getTeamById = async (id) => {
 export const createTeam = async (data) => {
   const toCreate = { ...data };
   if (toCreate.ageCategory === '' || toCreate.ageCategory == null) delete toCreate.ageCategory;
+  if (toCreate.season === '' || toCreate.season == null) delete toCreate.season;
   const team = await Team.create(toCreate);
 
   try {
@@ -34,16 +36,17 @@ export const createTeam = async (data) => {
     throw err;
   }
 
-  return team.populate('ageCategory');
+  return team.populate('ageCategory').populate('season');
 };
 
 export const updateTeam = async (id, data) => {
   const toUpdate = { ...data };
   if (toUpdate.ageCategory === '' || toUpdate.ageCategory == null) delete toUpdate.ageCategory;
+  if (toUpdate.season === '' || toUpdate.season == null) delete toUpdate.season;
   const team = await Team.findByIdAndUpdate(id, toUpdate, {
     new: true,
     runValidators: true,
-  }).populate('ageCategory');
+  }).populate('ageCategory').populate('season');
   if (!team) throw new AppError('Team not found.', 404);
   return team;
 };

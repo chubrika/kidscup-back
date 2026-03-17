@@ -27,6 +27,10 @@ const teamSchema = new mongoose.Schema(
       type: mongoose.Schema.Types.ObjectId,
       ref: 'Category',
     },
+    season: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'Season',
+    },
     createdAt: {
       type: Date,
       default: Date.now,

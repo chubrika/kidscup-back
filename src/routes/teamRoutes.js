@@ -26,6 +26,7 @@ const createValidation = [
     .withMessage('Category is required')
     .trim()
     .custom(ageCategoryValidator),
+  body('season').optional().isMongoId().withMessage('Invalid season ID'),
 ];
 
 const updateValidation = [
@@ -36,6 +37,7 @@ const updateValidation = [
   body('city').optional().trim(),
   body('coachName').optional().trim(),
   body('ageCategory').optional().trim().custom(ageCategoryValidator),
+  body('season').optional().isMongoId().withMessage('Invalid season ID'),
 ];
 
 // Public GET routes (no auth)
