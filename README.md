@@ -75,6 +75,7 @@ Use `apiUrl` for `HttpClient` base URL and include the token via an interceptor.
 | POST   | `/api/teams`      | Yes | Create team |
 | GET    | `/api/teams/:id`  | Yes | Get team |
 | PUT    | `/api/teams/:id`  | Yes | Update team |
+| PATCH  | `/api/teams/:id`  | Yes | Partial update team |
 | DELETE | `/api/teams/:id`  | Yes | Delete team |
 | GET    | `/api/players`    | Yes | List players (query: `teamId`) |
 | POST   | `/api/players`    | Yes | Create player |

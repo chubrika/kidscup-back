@@ -1,5 +1,6 @@
 import { Team } from '../models/index.js';
 import { AppError } from '../utils/AppError.js';
+import { moveTempObjectToTeam } from './r2Service.js';
 
 export const getTeams = async (query = {}) => {
   const { ageCategory } = query;
@@ -18,6 +19,21 @@ export const createTeam = async (data) => {
   const toCreate = { ...data };
   if (toCreate.ageCategory === '' || toCreate.ageCategory == null) delete toCreate.ageCategory;
   const team = await Team.create(toCreate);
+
+  try {
+    // If a temp upload key was provided, move it to the team's folder and persist final URL/key.
+    if (toCreate.logoKey?.startsWith('temp/')) {
+      const moved = await moveTempObjectToTeam({ key: String(toCreate.logoKey), teamId: String(team._id) });
+      team.logoKey = moved.key;
+      team.logo = moved.fileUrl;
+      await team.save();
+    }
+  } catch (err) {
+    // Keep create+move effectively atomic: if the move fails, roll back the DB create.
+    await Team.findByIdAndDelete(team._id).catch(() => undefined);
+    throw err;
+  }
+
   return team.populate('ageCategory');
 };
 

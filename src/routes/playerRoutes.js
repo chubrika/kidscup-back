@@ -15,6 +15,7 @@ const createValidation = [
   body('birthDate').optional().isISO8601().withMessage('Invalid birth date'),
   body('height').optional().isFloat({ min: 0 }).withMessage('Height must be positive'),
   body('photo').optional().trim(),
+  body('photoKey').optional().trim(),
   body('teamId').isMongoId().withMessage('Valid team ID is required'),
 ];
 
@@ -27,6 +28,7 @@ const updateValidation = [
   body('birthDate').optional().isISO8601(),
   body('height').optional().isFloat({ min: 0 }),
   body('photo').optional().trim(),
+  body('photoKey').optional().trim(),
   body('teamId').optional().isMongoId(),
 ];
 

@@ -1,6 +1,14 @@
 import dotenv from 'dotenv';
+import path from 'path';
+import { fileURLToPath } from 'url';
 
-dotenv.config();
+// Load `.env` deterministically in dev, regardless of where Node is launched from.
+// (Some setups start the process with a different CWD, causing dotenv to miss the file.)
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+const projectRoot = path.resolve(__dirname, '..', '..'); // kidscup-back/
+
+dotenv.config({ path: path.join(projectRoot, '.env') });
 
 const defaultMongoUri = 'mongodb+srv://chubro15_db_user:Lv2k9pjYkRm8752z@kidscup.ykzzzon.mongodb.net/kidscup';
 const mongodbUri = process.env.MONGODB_URI || defaultMongoUri;
@@ -20,4 +28,12 @@ export const config = {
     expiresIn: process.env.JWT_EXPIRES_IN || '7d',
   },
   corsOrigin: process.env.CORS_ORIGIN || '*',
+  r2: {
+    accountId: process.env.CLOUDFLARE_ACCOUNT_ID,
+    accessKeyId: process.env.R2_ACCESS_KEY_ID,
+    secretAccessKey: process.env.R2_SECRET_ACCESS_KEY,
+    bucketName: process.env.R2_BUCKET_NAME,
+    publicBaseUrl: process.env.R2_PUBLIC_BASE_URL, // optional; e.g. https://cdn.example.com
+    signedUrlExpiresInSeconds: Number(process.env.R2_SIGNED_URL_EXPIRES_IN || 300),
+  },
 };

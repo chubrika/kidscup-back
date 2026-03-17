@@ -18,6 +18,7 @@ const ageCategoryValidator = (value) => {
 const createValidation = [
   body('name').trim().notEmpty().withMessage('Team name is required'),
   body('logo').optional().trim(),
+  body('logoKey').optional().trim(),
   body('city').optional().trim(),
   body('coachName').optional().trim(),
   body('ageCategory')
@@ -31,6 +32,7 @@ const updateValidation = [
   idParam,
   body('name').optional().trim().notEmpty().withMessage('Team name cannot be empty'),
   body('logo').optional().trim(),
+  body('logoKey').optional().trim(),
   body('city').optional().trim(),
   body('coachName').optional().trim(),
   body('ageCategory').optional().trim().custom(ageCategoryValidator),
@@ -42,6 +44,7 @@ router.get('/:id', idParam, validate, teamController.getTeamById);
 
 router.use(protect);
 router.post('/', createValidation, validate, teamController.createTeam);
+router.patch('/:id', updateValidation, validate, teamController.updateTeam);
 router.put('/:id', updateValidation, validate, teamController.updateTeam);
 router.delete('/:id', idParam, validate, teamController.deleteTeam);
 

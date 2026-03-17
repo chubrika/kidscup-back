@@ -11,6 +11,10 @@ const teamSchema = new mongoose.Schema(
       type: String,
       default: '',
     },
+    logoKey: {
+      type: String,
+      default: '',
+    },
     city: {
       type: String,
       trim: true,

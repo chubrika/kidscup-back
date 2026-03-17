@@ -30,6 +30,10 @@ const matchSchema = new mongoose.Schema(
       type: mongoose.Schema.Types.ObjectId,
       ref: 'Category',
     },
+    season: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'Season',
+    },
     status: {
       type: String,
       enum: matchStatuses,

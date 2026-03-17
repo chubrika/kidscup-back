@@ -1,15 +1,16 @@
 import { Match, Team } from '../models/index.js';
 
 /**
- * Compute standings per age category.
+ * Compute standings per age category, optionally filtered by season.
  * Returns: { categoryId, categoryName, standings: [{ teamId, teamName, played, won, lost, pointsFor, pointsAgainst, pointsDiff, points }] }
  */
-export const getStandings = async (ageCategoryId = null) => {
+export const getStandings = async (ageCategoryId = null, seasonId = null) => {
   const matches = await Match.find({
     status: 'finished',
     ...(ageCategoryId && { ageCategory: ageCategoryId }),
+    ...(seasonId && { season: seasonId }),
   })
-    .populate('homeTeam awayTeam ageCategory')
+    .populate('homeTeam awayTeam season ageCategory')
     .lean();
 
   const byCategory = new Map();
@@ -57,7 +58,7 @@ export const getStandings = async (ageCategoryId = null) => {
     const standings = Array.from(group.teams.values()).map((t) => ({
       ...t,
       pointsDiff: t.pointsFor - t.pointsAgainst,
-      points: t.won * 2 + t.lost * 0,
+      points: t.won * 2 + t.lost * 1,
     }));
     standings.sort((a, b) => b.points - a.points || b.pointsDiff - a.pointsDiff);
     result.push({

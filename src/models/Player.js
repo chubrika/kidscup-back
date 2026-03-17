@@ -35,6 +35,10 @@ const playerSchema = new mongoose.Schema(
       type: String,
       default: '',
     },
+    photoKey: {
+      type: String,
+      default: '',
+    },
     teamId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: 'Team',
