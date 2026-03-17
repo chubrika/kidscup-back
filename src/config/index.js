@@ -33,7 +33,7 @@ export const config = {
     accessKeyId: process.env.R2_ACCESS_KEY_ID,
     secretAccessKey: process.env.R2_SECRET_ACCESS_KEY,
     bucketName: process.env.R2_BUCKET_NAME,
-    publicBaseUrl: process.env.R2_PUBLIC_BASE_URL, // optional; e.g. https://cdn.example.com
+    publicBaseUrl: process.env.R2_PUBLIC_BASE_URL, 
     signedUrlExpiresInSeconds: Number(process.env.R2_SIGNED_URL_EXPIRES_IN || 300),
   },
 };
