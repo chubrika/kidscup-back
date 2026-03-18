@@ -40,6 +40,8 @@ router.get('/:id', idParam, validate, matchController.getMatchById);
 router.use(protect);
 router.post('/', createValidation, validate, matchController.createMatch);
 router.put('/:id', updateValidation, validate, matchController.updateMatch);
+// Admin UI uses PATCH for updates; support it alongside PUT.
+router.patch('/:id', updateValidation, validate, matchController.updateMatch);
 router.delete('/:id', idParam, validate, matchController.deleteMatch);
 
 export default router;
