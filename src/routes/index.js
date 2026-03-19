@@ -8,6 +8,7 @@ import standingsRoutes from './standingsRoutes.js';
 import seasonRoutes from './seasonRoutes.js';
 import newsRoutes from './newsRoutes.js';
 import uploadRoutes from './uploadRoutes.js';
+import eventRoutes from './eventRoutes.js';
 
 const router = Router();
 
@@ -15,6 +16,7 @@ router.use('/auth', authRoutes);
 router.use('/teams', teamRoutes);
 router.use('/players', playerRoutes);
 router.use('/matches', matchRoutes);
+router.use('/events', eventRoutes);
 router.use('/categories', categoryRoutes);
 router.use('/seasons', seasonRoutes);
 router.use('/news', newsRoutes);

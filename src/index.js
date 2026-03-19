@@ -1,10 +1,15 @@
 import app from './app.js';
 import { config } from './config/index.js';
 import { connectDB } from './config/database.js';
+import http from 'http';
+import { initSocket } from './realtime/socket.js';
 
 const start = async () => {
   await connectDB();
-  app.listen(config.port, () => {
+  const server = http.createServer(app);
+  initSocket(server);
+
+  server.listen(config.port, () => {
     console.log(`Server running on port ${config.port} (${config.nodeEnv})`);
   });
 };
