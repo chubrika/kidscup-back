@@ -88,3 +88,16 @@ export const getMatchStats = async (matchId) => {
   return { teamScores, playerStats };
 };
 
+export const getMatchTeamScores = async (matchId) => {
+  const matchObjectId = Types.ObjectId.isValid(matchId) ? new Types.ObjectId(matchId) : null;
+  if (!matchObjectId) throw new AppError('Invalid match ID.', 400);
+
+  const teamScores = await MatchEvent.aggregate([
+    { $match: { matchId: matchObjectId } },
+    { $group: { _id: '$teamId', points: { $sum: '$value' } } },
+    { $project: { _id: 0, teamId: '$_id', points: 1 } },
+  ]);
+
+  return { teamScores };
+};
+

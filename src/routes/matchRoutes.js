@@ -48,6 +48,7 @@ const updateValidation = [
 
 router.get('/', matchController.getMatches);
 router.get('/:matchId/stats', matchIdParam, validate, matchEventController.getStats);
+router.get('/:matchId/team-scores', matchIdParam, validate, matchEventController.getTeamScores);
 router.get('/:matchId/events', matchIdParam, validate, matchEventController.getTimeline);
 router.get('/:id', idParam, validate, matchController.getMatchById);
 router.use(protect);

@@ -4,7 +4,7 @@ import { getIO } from '../realtime/socket.js';
 
 export const addEvent = asyncHandler(async (req, res) => {
   const event = await matchEventService.createMatchEvent(req.params.matchId, req.body);
-  const stats = await matchEventService.getMatchStats(req.params.matchId);
+  const stats = await matchEventService.getMatchTeamScores(req.params.matchId);
 
   getIO().to(`match:${req.params.matchId}`).emit('match:update', { matchId: req.params.matchId, stats });
 
@@ -16,6 +16,11 @@ export const getStats = asyncHandler(async (req, res) => {
   res.json(stats);
 });
 
+export const getTeamScores = asyncHandler(async (req, res) => {
+  const stats = await matchEventService.getMatchTeamScores(req.params.matchId);
+  res.json(stats);
+});
+
 export const getTimeline = asyncHandler(async (req, res) => {
   const events = await matchEventService.listMatchEvents(req.params.matchId, { limit: req.query.limit });
   res.json(events);
@@ -23,7 +28,7 @@ export const getTimeline = asyncHandler(async (req, res) => {
 
 export const deleteEvent = asyncHandler(async (req, res) => {
   const deleted = await matchEventService.deleteMatchEventById(req.params.id);
-  const stats = await matchEventService.getMatchStats(String(deleted.matchId));
+  const stats = await matchEventService.getMatchTeamScores(String(deleted.matchId));
 
   getIO().to(`match:${String(deleted.matchId)}`).emit('match:update', { matchId: String(deleted.matchId), stats });
 
