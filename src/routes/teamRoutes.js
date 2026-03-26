@@ -21,6 +21,8 @@ const createValidation = [
   body('logoKey').optional().trim(),
   body('city').optional().trim(),
   body('coachName').optional().trim(),
+  body('assistantCoachName').optional().trim(),
+  body('doctor').optional().trim(),
   body('ageCategory')
     .notEmpty()
     .withMessage('Category is required')
@@ -36,6 +38,8 @@ const updateValidation = [
   body('logoKey').optional().trim(),
   body('city').optional().trim(),
   body('coachName').optional().trim(),
+  body('assistantCoachName').optional().trim(),
+  body('doctor').optional().trim(),
   body('ageCategory').optional().trim().custom(ageCategoryValidator),
   body('season').optional().isMongoId().withMessage('Invalid season ID'),
 ];
@@ -43,9 +47,9 @@ const updateValidation = [
 // Public GET routes (no auth)
 router.get('/', teamController.getTeams);
 router.get('/:id', idParam, validate, teamController.getTeamById);
+router.post('/', createValidation, validate, teamController.createTeam);
 
 router.use(protect);
-router.post('/', createValidation, validate, teamController.createTeam);
 router.patch('/:id', updateValidation, validate, teamController.updateTeam);
 router.put('/:id', updateValidation, validate, teamController.updateTeam);
 router.delete('/:id', idParam, validate, teamController.deleteTeam);

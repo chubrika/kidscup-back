@@ -4,10 +4,10 @@ import * as uploadController from '../controllers/uploadController.js';
 
 const router = Router();
 
-// Require auth to prevent public signed-url abuse
-router.use(protect);
-
 router.get('/upload-url', uploadController.getUploadUrl);
+
+// Keep destructive upload actions protected.
+router.use(protect);
 router.delete('/upload', uploadController.deleteUpload);
 router.post('/upload/move', uploadController.moveUpload);
 

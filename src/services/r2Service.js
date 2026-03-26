@@ -24,6 +24,16 @@ const r2Client = () => {
 
 const bucketName = () => required('R2_BUCKET_NAME', config.r2.bucketName);
 
+const buildCopySource = (bucket, key) => {
+  // R2 CopySource should be URL-encoded and passed without a leading slash.
+  // Encode per segment so path separators remain intact.
+  const encodedKey = String(key)
+    .split('/')
+    .map((segment) => encodeURIComponent(segment))
+    .join('/');
+  return `${bucket}/${encodedKey}`;
+};
+
 const extFromContentType = (contentType) => {
   const t = (contentType || '').toLowerCase().trim();
   if (t === 'image/jpeg' || t === 'image/jpg') return 'jpg';
@@ -92,7 +102,7 @@ export const moveTempObjectToTeam = async ({ key, teamId }) => {
   await client.send(
     new CopyObjectCommand({
       Bucket,
-      CopySource: `/${Bucket}/${key}`,
+      CopySource: buildCopySource(Bucket, key),
       Key: destKey,
     }),
   );
@@ -112,7 +122,7 @@ export const moveTempObjectToPlayer = async ({ key, playerId }) => {
   await client.send(
     new CopyObjectCommand({
       Bucket,
-      CopySource: `/${Bucket}/${key}`,
+      CopySource: buildCopySource(Bucket, key),
       Key: destKey,
     }),
   );
@@ -132,7 +142,7 @@ export const moveTempObjectToNews = async ({ key, newsId }) => {
   await client.send(
     new CopyObjectCommand({
       Bucket,
-      CopySource: `/${Bucket}/${key}`,
+      CopySource: buildCopySource(Bucket, key),
       Key: destKey,
     }),
   );

@@ -36,7 +36,7 @@ export const createTeam = async (data) => {
     throw err;
   }
 
-  return team.populate('ageCategory').populate('season');
+  return team.populate(['ageCategory', 'season']);
 };
 
 export const updateTeam = async (id, data) => {

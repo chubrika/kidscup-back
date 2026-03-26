@@ -23,6 +23,16 @@ const teamSchema = new mongoose.Schema(
       type: String,
       trim: true,
     },
+    assistantCoachName: {
+      type: String,
+      trim: true,
+      default: '',
+    },
+    doctor: {
+      type: String,
+      trim: true,
+      default: '',
+    },
     ageCategory: {
       type: mongoose.Schema.Types.ObjectId,
       ref: 'Category',
