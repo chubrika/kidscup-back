@@ -12,10 +12,14 @@ import eventRoutes from './eventRoutes.js';
 import adminTeamRoutes from './adminTeamRoutes.js';
 import dashboardRoutes from './dashboardRoutes.js';
 import adminMatchRoutes from './adminMatchRoutes.js';
+import configRoutes from './configRoutes.js';
+import adminConfigRoutes from './adminConfigRoutes.js';
 
 const router = Router();
 
 router.use('/auth', authRoutes);
+router.use('/config', configRoutes);
+router.use('/admin/config', adminConfigRoutes);
 router.use('/admin/dashboard', dashboardRoutes);
 router.use('/admin/matches', adminMatchRoutes);
 router.use('/admin/teams', adminTeamRoutes);
