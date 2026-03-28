@@ -3,6 +3,17 @@ import { AppError } from '../utils/AppError.js';
 
 const matchPopulate = ['homeTeam', 'awayTeam', 'season', 'ageCategory'];
 
+export const getMatchesForToday = async () => {
+  const start = new Date();
+  start.setHours(0, 0, 0, 0);
+  const end = new Date();
+  end.setHours(23, 59, 59, 999);
+  return Match.find({ date: { $gte: start, $lte: end } })
+    .populate(matchPopulate)
+    .sort({ time: 1, date: 1 })
+    .lean();
+};
+
 export const getMatches = async (query = {}) => {
   const { ageCategory, status, seasonId, from, to } = query;
   const filter = {};

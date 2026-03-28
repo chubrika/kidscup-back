@@ -5,6 +5,37 @@ import { AppError } from '../utils/AppError.js';
 
 const STATIC_ADMIN_ID = 'static-admin';
 
+/**
+ * If a valid Bearer token is present, sets req.user; otherwise leaves req.user null.
+ * Invalid or expired tokens are ignored so public routes stay usable without breaking anonymous access.
+ */
+export const optionalAuth = async (req, res, next) => {
+  req.user = null;
+  let token;
+  const authHeader = req.headers.authorization;
+  if (authHeader?.startsWith('Bearer ')) {
+    token = authHeader.slice(7);
+  }
+  if (!token) {
+    return next();
+  }
+  try {
+    const decoded = jwt.verify(token, config.jwt.secret);
+    if (decoded.id === STATIC_ADMIN_ID) {
+      req.user = { _id: STATIC_ADMIN_ID, email: 'admin@kidscup.ge', name: 'Admin' };
+      return next();
+    }
+    const user = await User.findById(decoded.id).select('-password');
+    if (!user) {
+      return next();
+    }
+    req.user = user;
+    return next();
+  } catch {
+    return next();
+  }
+};
+
 export const protect = async (req, res, next) => {
   let token;
   const authHeader = req.headers.authorization;

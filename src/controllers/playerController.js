@@ -2,12 +2,14 @@ import * as playerService from '../services/playerService.js';
 import { asyncHandler } from '../utils/asyncHandler.js';
 
 export const getPlayers = asyncHandler(async (req, res) => {
-  const players = await playerService.getPlayers(req.query);
+  const includeNonApprovedTeams = Boolean(req.user);
+  const players = await playerService.getPlayers(req.query, { includeNonApprovedTeams });
   res.json(players);
 });
 
 export const getPlayerById = asyncHandler(async (req, res) => {
-  const player = await playerService.getPlayerById(req.params.id);
+  const includeNonApprovedTeams = Boolean(req.user);
+  const player = await playerService.getPlayerById(req.params.id, { includeNonApprovedTeams });
   res.json(player);
 });
 

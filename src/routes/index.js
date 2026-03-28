@@ -9,10 +9,16 @@ import seasonRoutes from './seasonRoutes.js';
 import newsRoutes from './newsRoutes.js';
 import uploadRoutes from './uploadRoutes.js';
 import eventRoutes from './eventRoutes.js';
+import adminTeamRoutes from './adminTeamRoutes.js';
+import dashboardRoutes from './dashboardRoutes.js';
+import adminMatchRoutes from './adminMatchRoutes.js';
 
 const router = Router();
 
 router.use('/auth', authRoutes);
+router.use('/admin/dashboard', dashboardRoutes);
+router.use('/admin/matches', adminMatchRoutes);
+router.use('/admin/teams', adminTeamRoutes);
 router.use('/teams', teamRoutes);
 router.use('/players', playerRoutes);
 router.use('/matches', matchRoutes);

@@ -7,7 +7,8 @@ export const getTeams = asyncHandler(async (req, res) => {
 });
 
 export const getTeamById = asyncHandler(async (req, res) => {
-  const team = await teamService.getTeamById(req.params.id);
+  const allowNonApproved = Boolean(req.user);
+  const team = await teamService.getTeamById(req.params.id, { allowNonApproved });
   res.json(team);
 });
 

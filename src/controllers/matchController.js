@@ -19,6 +19,11 @@ export const getMatches = asyncHandler(async (req, res) => {
   res.json(matches);
 });
 
+export const getTodayMatchesAdmin = asyncHandler(async (req, res) => {
+  const matches = await matchService.getMatchesForToday();
+  res.json(matches);
+});
+
 export const getMatchById = asyncHandler(async (req, res) => {
   const match = await matchService.getMatchById(req.params.id);
   res.json(match);

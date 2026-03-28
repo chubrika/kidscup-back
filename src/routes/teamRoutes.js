@@ -1,7 +1,7 @@
 import { Router } from 'express';
 import { body, param } from 'express-validator';
 import * as teamController from '../controllers/teamController.js';
-import { protect, validate } from '../middleware/index.js';
+import { optionalAuth, protect, validate } from '../middleware/index.js';
 
 const router = Router();
 
@@ -44,9 +44,9 @@ const updateValidation = [
   body('season').optional().isMongoId().withMessage('Invalid season ID'),
 ];
 
-// Public GET routes (no auth)
+// Public GET routes (no auth); optional JWT allows admins to load non-approved teams by id
 router.get('/', teamController.getTeams);
-router.get('/:id', idParam, validate, teamController.getTeamById);
+router.get('/:id', optionalAuth, idParam, validate, teamController.getTeamById);
 router.post('/', createValidation, validate, teamController.createTeam);
 
 router.use(protect);

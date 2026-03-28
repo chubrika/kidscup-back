@@ -1,7 +1,7 @@
 import { Router } from 'express';
 import { body, param } from 'express-validator';
 import * as playerController from '../controllers/playerController.js';
-import { protect, validate } from '../middleware/index.js';
+import { optionalAuth, protect, validate } from '../middleware/index.js';
 
 const router = Router();
 
@@ -32,9 +32,9 @@ const updateValidation = [
   body('teamId').optional().isMongoId(),
 ];
 
-// Public GET routes (no auth)
-router.get('/', playerController.getPlayers);
-router.get('/:id', idParam, validate, playerController.getPlayerById);
+// Public GET routes; optional JWT lets admins load players on non-approved teams
+router.get('/', optionalAuth, playerController.getPlayers);
+router.get('/:id', optionalAuth, idParam, validate, playerController.getPlayerById);
 router.post('/', createValidation, validate, playerController.createPlayer);
 
 router.use(protect);
