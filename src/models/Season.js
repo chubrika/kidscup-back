@@ -7,6 +7,35 @@ const seasonSchema = new mongoose.Schema(
       required: true,
       trim: true,
     },
+    albums: {
+      type: [
+        {
+          title: { type: String, required: true, trim: true },
+          photos: {
+            type: [
+              {
+                url: { type: String, default: '' },
+                key: { type: String, default: '' },
+                createdAt: { type: Date, default: Date.now },
+              },
+            ],
+            default: [],
+          },
+          createdAt: { type: Date, default: Date.now },
+        },
+      ],
+      default: [],
+    },
+    photos: {
+      type: [
+        {
+          url: { type: String, default: '' },
+          key: { type: String, default: '' },
+          createdAt: { type: Date, default: Date.now },
+        },
+      ],
+      default: [],
+    },
     ageCategory: {
       type: mongoose.Schema.Types.ObjectId,
       ref: 'Category',

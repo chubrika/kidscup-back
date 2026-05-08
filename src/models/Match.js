@@ -49,6 +49,10 @@ const matchSchema = new mongoose.Schema(
       default: 0,
       min: 0,
     },
+    refereesInfo: {
+      type: String,
+      default: '',
+    },
   },
   { timestamps: true }
 );

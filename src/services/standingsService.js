@@ -5,6 +5,14 @@ import { Match, Team } from '../models/index.js';
  * Returns: { categoryId, categoryName, standings: [{ teamId, teamName, played, won, lost, pointsFor, pointsAgainst, pointsDiff, points }] }
  */
 export const getStandings = async (ageCategoryId = null, seasonId = null) => {
+  const teams = await Team.find({
+    status: 'approved',
+    ...(ageCategoryId && { ageCategory: ageCategoryId }),
+    ...(seasonId && { season: seasonId }),
+  })
+    .populate('ageCategory')
+    .lean();
+
   const matches = await Match.find({
     status: 'finished',
     ...(ageCategoryId && { ageCategory: ageCategoryId }),
@@ -14,6 +22,28 @@ export const getStandings = async (ageCategoryId = null, seasonId = null) => {
     .lean();
 
   const byCategory = new Map();
+
+  for (const team of teams) {
+    const catId = team.ageCategory?._id?.toString() || 'uncategorized';
+    const catName = team.ageCategory?.name || 'Uncategorized';
+    if (!byCategory.has(catId)) {
+      byCategory.set(catId, { categoryId: catId, categoryName: catName, teams: new Map() });
+    }
+    const group = byCategory.get(catId);
+    const teamId = team._id?.toString();
+    if (!teamId) continue;
+    if (!group.teams.has(teamId)) {
+      group.teams.set(teamId, {
+        teamId,
+        teamName: team.name,
+        played: 0,
+        won: 0,
+        lost: 0,
+        pointsFor: 0,
+        pointsAgainst: 0,
+      });
+    }
+  }
 
   for (const m of matches) {
     const catId = m.ageCategory?._id?.toString() || 'uncategorized';
@@ -34,6 +64,7 @@ export const getStandings = async (ageCategoryId = null, seasonId = null) => {
         group.teams.set(homeId, { teamId: homeId, teamName: homeName, played: 0, won: 0, lost: 0, pointsFor: 0, pointsAgainst: 0 });
       }
       const t = group.teams.get(homeId);
+      if (!t.teamName && homeName) t.teamName = homeName;
       t.played += 1;
       t.pointsFor += sh;
       t.pointsAgainst += sa;
@@ -45,6 +76,7 @@ export const getStandings = async (ageCategoryId = null, seasonId = null) => {
         group.teams.set(awayId, { teamId: awayId, teamName: awayName, played: 0, won: 0, lost: 0, pointsFor: 0, pointsAgainst: 0 });
       }
       const t = group.teams.get(awayId);
+      if (!t.teamName && awayName) t.teamName = awayName;
       t.played += 1;
       t.pointsFor += sa;
       t.pointsAgainst += sh;

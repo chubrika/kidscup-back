@@ -151,6 +151,46 @@ export const moveTempObjectToNews = async ({ key, newsId }) => {
   return { key: destKey, fileUrl: buildPublicFileUrl(destKey) };
 };
 
+export const moveTempObjectToSeason = async ({ key, seasonId }) => {
+  if (!key?.startsWith('temp/')) return { key, fileUrl: buildPublicFileUrl(key) };
+  const client = r2Client();
+  const Bucket = bucketName();
+
+  const filename = key.split('/').pop();
+  const destKey = `seasons/${seasonId}/${filename}`;
+
+  await client.send(
+    new CopyObjectCommand({
+      Bucket,
+      CopySource: buildCopySource(Bucket, key),
+      Key: destKey,
+    }),
+  );
+  await client.send(new DeleteObjectCommand({ Bucket, Key: key }));
+
+  return { key: destKey, fileUrl: buildPublicFileUrl(destKey) };
+};
+
+export const moveTempObjectToSeasonAlbum = async ({ key, seasonId, albumId }) => {
+  if (!key?.startsWith('temp/')) return { key, fileUrl: buildPublicFileUrl(key) };
+  const client = r2Client();
+  const Bucket = bucketName();
+
+  const filename = key.split('/').pop();
+  const destKey = `seasons/${seasonId}/albums/${albumId}/${filename}`;
+
+  await client.send(
+    new CopyObjectCommand({
+      Bucket,
+      CopySource: buildCopySource(Bucket, key),
+      Key: destKey,
+    }),
+  );
+  await client.send(new DeleteObjectCommand({ Bucket, Key: key }));
+
+  return { key: destKey, fileUrl: buildPublicFileUrl(destKey) };
+};
+
 export const cleanupOldTempObjects = async ({ olderThanHours = 24, maxKeys = 1000 } = {}) => {
   const client = r2Client();
   const Bucket = bucketName();

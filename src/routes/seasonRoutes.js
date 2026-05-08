@@ -29,6 +29,28 @@ router.get('/:id', idParam, validate, seasonController.getSeasonById);
 router.use(protect);
 router.post('/', createValidation, validate, seasonController.createSeason);
 router.patch('/:id', updateValidation, validate, seasonController.updateSeason);
+router.post(
+  '/:id/albums',
+  idParam,
+  body('title').trim().notEmpty().withMessage('Missing title'),
+  validate,
+  seasonController.createSeasonAlbum,
+);
+router.post(
+  '/:id/albums/:albumId/photos',
+  idParam,
+  param('albumId').isMongoId().withMessage('Invalid album ID'),
+  body('key').trim().notEmpty().withMessage('Missing key'),
+  validate,
+  seasonController.addSeasonAlbumPhoto,
+);
+router.post(
+  '/:id/photos',
+  idParam,
+  body('key').trim().notEmpty().withMessage('Missing key'),
+  validate,
+  seasonController.addSeasonPhoto,
+);
 router.delete('/:id', idParam, validate, seasonController.deleteSeason);
 
 export default router;
