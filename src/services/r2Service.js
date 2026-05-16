@@ -131,6 +131,26 @@ export const moveTempObjectToPlayer = async ({ key, playerId }) => {
   return { key: destKey, fileUrl: buildPublicFileUrl(destKey) };
 };
 
+export const moveTempObjectToPlayerIdDocument = async ({ key, playerId }) => {
+  if (!key?.startsWith('temp/')) return { key, fileUrl: buildPublicFileUrl(key) };
+  const client = r2Client();
+  const Bucket = bucketName();
+
+  const filename = key.split('/').pop();
+  const destKey = `players/${playerId}/id-documents/${filename}`;
+
+  await client.send(
+    new CopyObjectCommand({
+      Bucket,
+      CopySource: buildCopySource(Bucket, key),
+      Key: destKey,
+    }),
+  );
+  await client.send(new DeleteObjectCommand({ Bucket, Key: key }));
+
+  return { key: destKey, fileUrl: buildPublicFileUrl(destKey) };
+};
+
 export const moveTempObjectToNews = async ({ key, newsId }) => {
   if (!key?.startsWith('temp/')) return { key, fileUrl: buildPublicFileUrl(key) };
   const client = r2Client();

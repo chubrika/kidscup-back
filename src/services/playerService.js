@@ -1,6 +1,6 @@
 import { Player } from '../models/index.js';
 import { AppError } from '../utils/AppError.js';
-import { moveTempObjectToPlayer } from './r2Service.js';
+import { moveTempObjectToPlayer, moveTempObjectToPlayerIdDocument } from './r2Service.js';
 
 const populateTeamApprovedOnly = {
   path: 'teamId',
@@ -44,10 +44,26 @@ export const createPlayer = async (data) => {
   const player = await Player.create(toCreate);
 
   try {
+    let needsSave = false;
+
     if (toCreate.photoKey?.startsWith('temp/')) {
       const moved = await moveTempObjectToPlayer({ key: String(toCreate.photoKey), playerId: String(player._id) });
       player.photoKey = moved.key;
       player.photo = moved.fileUrl;
+      needsSave = true;
+    }
+
+    if (toCreate.idDocumentKey?.startsWith('temp/')) {
+      const moved = await moveTempObjectToPlayerIdDocument({
+        key: String(toCreate.idDocumentKey),
+        playerId: String(player._id),
+      });
+      player.idDocumentKey = moved.key;
+      player.idDocument = moved.fileUrl;
+      needsSave = true;
+    }
+
+    if (needsSave) {
       await player.save();
     }
   } catch (err) {
@@ -59,7 +75,24 @@ export const createPlayer = async (data) => {
 };
 
 export const updatePlayer = async (id, data) => {
-  const player = await Player.findByIdAndUpdate(id, data, {
+  const toUpdate = { ...data };
+
+  if (toUpdate.photoKey?.startsWith('temp/')) {
+    const moved = await moveTempObjectToPlayer({ key: String(toUpdate.photoKey), playerId: String(id) });
+    toUpdate.photoKey = moved.key;
+    toUpdate.photo = moved.fileUrl;
+  }
+
+  if (toUpdate.idDocumentKey?.startsWith('temp/')) {
+    const moved = await moveTempObjectToPlayerIdDocument({
+      key: String(toUpdate.idDocumentKey),
+      playerId: String(id),
+    });
+    toUpdate.idDocumentKey = moved.key;
+    toUpdate.idDocument = moved.fileUrl;
+  }
+
+  const player = await Player.findByIdAndUpdate(id, toUpdate, {
     new: true,
     runValidators: true,
   }).populate('teamId');

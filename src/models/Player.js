@@ -39,6 +39,14 @@ const playerSchema = new mongoose.Schema(
       type: String,
       default: '',
     },
+    idDocument: {
+      type: String,
+      default: '',
+    },
+    idDocumentKey: {
+      type: String,
+      default: '',
+    },
     teamId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: 'Team',

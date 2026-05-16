@@ -16,6 +16,8 @@ const createValidation = [
   body('height').optional().isFloat({ min: 0 }).withMessage('Height must be positive'),
   body('photo').optional().trim(),
   body('photoKey').optional().trim(),
+  body('idDocument').optional().trim(),
+  body('idDocumentKey').optional().trim(),
   body('teamId').isMongoId().withMessage('Valid team ID is required'),
 ];
 
@@ -29,6 +31,8 @@ const updateValidation = [
   body('height').optional().isFloat({ min: 0 }),
   body('photo').optional().trim(),
   body('photoKey').optional().trim(),
+  body('idDocument').optional().trim(),
+  body('idDocumentKey').optional().trim(),
   body('teamId').optional().isMongoId(),
 ];
 
