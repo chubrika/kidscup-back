@@ -27,3 +27,13 @@ export const deletePlayer = asyncHandler(async (req, res) => {
   await playerService.deletePlayer(req.params.id);
   res.status(204).send();
 });
+
+export const updatePlayerDuringRegistration = asyncHandler(async (req, res) => {
+  const player = await playerService.updatePlayerDuringRegistration(req.params.id, req.body);
+  res.json(player);
+});
+
+export const deletePlayerDuringRegistration = asyncHandler(async (req, res) => {
+  await playerService.deletePlayerDuringRegistration(req.params.id);
+  res.status(204).send();
+});

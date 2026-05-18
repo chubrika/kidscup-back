@@ -105,3 +105,22 @@ export const deletePlayer = async (id) => {
   if (!player) throw new AppError('Player not found.', 404);
   return player;
 };
+
+async function assertPlayerOnPendingTeam(id) {
+  const player = await Player.findById(id).populate('teamId');
+  if (!player) throw new AppError('Player not found.', 404);
+  if (!player.teamId || player.teamId.status !== 'pending') {
+    throw new AppError('Player can only be changed while team registration is pending.', 403);
+  }
+  return player;
+}
+
+export const updatePlayerDuringRegistration = async (id, data) => {
+  await assertPlayerOnPendingTeam(id);
+  return updatePlayer(id, data);
+};
+
+export const deletePlayerDuringRegistration = async (id) => {
+  await assertPlayerOnPendingTeam(id);
+  return deletePlayer(id);
+};

@@ -40,6 +40,18 @@ const updateValidation = [
 router.get('/', optionalAuth, playerController.getPlayers);
 router.get('/:id', optionalAuth, idParam, validate, playerController.getPlayerById);
 router.post('/', createValidation, validate, playerController.createPlayer);
+router.put(
+  '/:id/register',
+  updateValidation,
+  validate,
+  playerController.updatePlayerDuringRegistration,
+);
+router.delete(
+  '/:id/register',
+  idParam,
+  validate,
+  playerController.deletePlayerDuringRegistration,
+);
 
 router.use(protect);
 router.put('/:id', updateValidation, validate, playerController.updatePlayer);
