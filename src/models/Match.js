@@ -34,6 +34,14 @@ const matchSchema = new mongoose.Schema(
       type: mongoose.Schema.Types.ObjectId,
       ref: 'Season',
     },
+    group: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'Group',
+    },
+    round: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'Round',
+    },
     status: {
       type: String,
       enum: matchStatuses,
@@ -58,5 +66,6 @@ const matchSchema = new mongoose.Schema(
 );
 
 matchSchema.index({ date: 1, ageCategory: 1 });
+matchSchema.index({ group: 1, round: 1 });
 
 export const Match = mongoose.model('Match', matchSchema);

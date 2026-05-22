@@ -41,6 +41,10 @@ const teamSchema = new mongoose.Schema(
       type: mongoose.Schema.Types.ObjectId,
       ref: 'Season',
     },
+    group: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'Group',
+    },
     status: {
       type: String,
       enum: ['pending', 'approved', 'rejected'],

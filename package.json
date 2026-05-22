@@ -7,7 +7,9 @@
   "scripts": {
     "start": "node src/index.js",
     "dev": "node --watch src/index.js",
-    "seed": "node src/scripts/seed.js"
+    "seed": "node src/scripts/seed.js",
+    "migrate:groups": "node src/scripts/migrate-groups-rounds.js",
+    "test": "node --test src/scripts/standingsService.test.js"
   },
   "keywords": [
     "basketball",

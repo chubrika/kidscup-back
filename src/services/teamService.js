@@ -5,15 +5,16 @@ import { moveTempObjectToTeam } from './r2Service.js';
 const TEAM_STATUSES = ['pending', 'approved', 'rejected'];
 
 export const getTeams = async (query = {}) => {
-  const { ageCategory, season } = query;
+  const { ageCategory, season, groupId } = query;
   const filter = { status: 'approved' };
   if (ageCategory) filter.ageCategory = ageCategory;
   if (season) filter.season = season;
-  return Team.find(filter).populate('ageCategory').populate('season').sort({ createdAt: -1 }).lean();
+  if (groupId) filter.group = groupId;
+  return Team.find(filter).populate('ageCategory').populate('season').populate('group').sort({ createdAt: -1 }).lean();
 };
 
 export const getTeamById = async (id, { allowNonApproved = false } = {}) => {
-  const team = await Team.findById(id).populate('ageCategory').populate('season');
+  const team = await Team.findById(id).populate('ageCategory').populate('season').populate('group');
   if (!team) throw new AppError('Team not found.', 404);
   if (!allowNonApproved && team.status !== 'approved') {
     throw new AppError('Team not found.', 404);
@@ -26,6 +27,7 @@ export const createTeam = async (data) => {
   delete toCreate.status;
   if (toCreate.ageCategory === '' || toCreate.ageCategory == null) delete toCreate.ageCategory;
   if (toCreate.season === '' || toCreate.season == null) delete toCreate.season;
+  if (toCreate.group === '' || toCreate.group == null) delete toCreate.group;
   toCreate.status = 'pending';
   const team = await Team.create(toCreate);
 
@@ -43,7 +45,7 @@ export const createTeam = async (data) => {
     throw err;
   }
 
-  return team.populate(['ageCategory', 'season']);
+  return team.populate(['ageCategory', 'season', 'group']);
 };
 
 export const updateTeam = async (id, data) => {
@@ -51,10 +53,11 @@ export const updateTeam = async (id, data) => {
   delete toUpdate.status;
   if (toUpdate.ageCategory === '' || toUpdate.ageCategory == null) delete toUpdate.ageCategory;
   if (toUpdate.season === '' || toUpdate.season == null) delete toUpdate.season;
+  if (toUpdate.group === '' || toUpdate.group == null) delete toUpdate.group;
   const team = await Team.findByIdAndUpdate(id, toUpdate, {
     new: true,
     runValidators: true,
-  }).populate('ageCategory').populate('season');
+  }).populate('ageCategory').populate('season').populate('group');
   if (!team) throw new AppError('Team not found.', 404);
   return team;
 };
@@ -71,7 +74,7 @@ export const listTeamsAdmin = async ({ status } = {}) => {
   if (status && TEAM_STATUSES.includes(String(status))) {
     filter.status = String(status);
   }
-  return Team.find(filter).populate('ageCategory').populate('season').sort({ createdAt: -1 }).lean();
+  return Team.find(filter).populate('ageCategory').populate('season').populate('group').sort({ createdAt: -1 }).lean();
 };
 
 export const setTeamStatus = async (id, nextStatus) => {
@@ -82,7 +85,7 @@ export const setTeamStatus = async (id, nextStatus) => {
     id,
     { status: nextStatus },
     { new: true, runValidators: true },
-  ).populate('ageCategory').populate('season');
+  ).populate('ageCategory').populate('season').populate('group');
   if (!team) throw new AppError('Team not found.', 404);
   return team;
 };

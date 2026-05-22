@@ -29,6 +29,7 @@ const createValidation = [
     .trim()
     .custom(ageCategoryValidator),
   body('season').optional().isMongoId().withMessage('Invalid season ID'),
+  body('group').optional().isMongoId().withMessage('Invalid group ID'),
 ];
 
 const updateValidation = [
@@ -42,6 +43,7 @@ const updateValidation = [
   body('doctor').optional().trim(),
   body('ageCategory').optional().trim().custom(ageCategoryValidator),
   body('season').optional().isMongoId().withMessage('Invalid season ID'),
+  body('group').optional().isMongoId().withMessage('Invalid group ID'),
 ];
 
 // Public GET routes (no auth); optional JWT allows admins to load non-approved teams by id
