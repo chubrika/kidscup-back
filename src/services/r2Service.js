@@ -1,5 +1,12 @@
 import crypto from 'crypto';
-import { S3Client, PutObjectCommand, DeleteObjectCommand, CopyObjectCommand, ListObjectsV2Command } from '@aws-sdk/client-s3';
+import {
+  S3Client,
+  PutObjectCommand,
+  DeleteObjectCommand,
+  CopyObjectCommand,
+  ListObjectsV2Command,
+  HeadObjectCommand,
+} from '@aws-sdk/client-s3';
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
 import { config } from '../config/index.js';
 
@@ -36,9 +43,15 @@ const buildCopySource = (bucket, key) => {
 
 const extFromContentType = (contentType) => {
   const t = (contentType || '').toLowerCase().trim();
-  if (t === 'image/jpeg' || t === 'image/jpg') return 'jpg';
-  if (t === 'image/png') return 'png';
-  if (t === 'image/webp') return 'webp';
+  // Content-Type can include parameters, e.g. "image/jpeg; charset=binary"
+  const mime = t.split(';')[0]?.trim();
+  if (!mime) return null;
+
+  if (mime === 'image/jpeg' || mime === 'image/jpg' || mime === 'image/pjpeg') return 'jpg';
+  if (mime === 'image/png') return 'png';
+  if (mime === 'image/webp') return 'webp';
+  if (mime === 'image/heic') return 'heic';
+  if (mime === 'image/heif') return 'heif';
   return null;
 };
 
@@ -91,124 +104,155 @@ export const deleteObject = async (key) => {
   );
 };
 
-export const moveTempObjectToTeam = async ({ key, teamId }) => {
-  if (!key?.startsWith('temp/')) return { key, fileUrl: buildPublicFileUrl(key) };
+const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+
+const isNotFoundError = (err) => {
+  const name = err?.name || err?.Code;
+  const http = err?.$metadata?.httpStatusCode;
+  return name === 'NotFound' || name === 'NoSuchKey' || http === 404;
+};
+
+const headObjectExists = async ({ client, Bucket, Key }) => {
+  try {
+    await client.send(new HeadObjectCommand({ Bucket, Key }));
+    return true;
+  } catch (err) {
+    if (isNotFoundError(err)) return false;
+    throw err;
+  }
+};
+
+const verifyObjectExistsWithRetry = async ({ client, Bucket, Key, attempts = 6 }) => {
+  for (let i = 0; i < attempts; i += 1) {
+    const exists = await headObjectExists({ client, Bucket, Key });
+    if (exists) return true;
+    // R2/S3-compatible storage can be briefly inconsistent immediately after CopyObject.
+    // Use bounded exponential backoff.
+    await sleep(Math.min(1500, 150 * 2 ** i));
+  }
+  return false;
+};
+
+const finalizeTempObject = async ({ tempKey, destKey, context }) => {
   const client = r2Client();
   const Bucket = bucketName();
+
+  const logBase = {
+    op: 'r2.finalizeTempObject',
+    tempKey,
+    destKey,
+    ...(context || {}),
+  };
+
+  console.info({ ...logBase, step: 'copy.start' });
+  await client.send(
+    new CopyObjectCommand({
+      Bucket,
+      CopySource: buildCopySource(Bucket, tempKey),
+      Key: destKey,
+    }),
+  );
+  console.info({ ...logBase, step: 'copy.ok' });
+
+  console.info({ ...logBase, step: 'verify.start' });
+  const verified = await verifyObjectExistsWithRetry({ client, Bucket, Key: destKey });
+  if (!verified) {
+    const err = new Error('R2 copy verification failed: destination missing after copy');
+    console.error({ ...logBase, step: 'verify.fail' }, err);
+    err.code = 'R2_COPY_VERIFY_FAILED';
+    throw err;
+  }
+  console.info({ ...logBase, step: 'verify.ok' });
+
+  // IMPORTANT: only delete temp after destination is verified to exist.
+  console.info({ ...logBase, step: 'tempDelete.start' });
+  try {
+    await client.send(new DeleteObjectCommand({ Bucket, Key: tempKey }));
+    console.info({ ...logBase, step: 'tempDelete.ok' });
+  } catch (err) {
+    // Not fatal for durability: destination exists; temp cleanup can be retried later.
+    console.error({ ...logBase, step: 'tempDelete.fail' }, err);
+  }
+
+  return { key: destKey, fileUrl: buildPublicFileUrl(destKey) };
+};
+
+export const moveTempObjectToTeam = async ({ key, teamId }) => {
+  if (!key?.startsWith('temp/')) return { key, fileUrl: buildPublicFileUrl(key) };
 
   const filename = key.split('/').pop();
   const destKey = `teams/${teamId}/${filename}`;
 
-  await client.send(
-    new CopyObjectCommand({
-      Bucket,
-      CopySource: buildCopySource(Bucket, key),
-      Key: destKey,
-    }),
-  );
-  await client.send(new DeleteObjectCommand({ Bucket, Key: key }));
-
-  return { key: destKey, fileUrl: buildPublicFileUrl(destKey) };
+  return finalizeTempObject({
+    tempKey: key,
+    destKey,
+    context: { entity: 'team', teamId },
+  });
 };
 
 export const moveTempObjectToPlayer = async ({ key, playerId }) => {
   if (!key?.startsWith('temp/')) return { key, fileUrl: buildPublicFileUrl(key) };
-  const client = r2Client();
-  const Bucket = bucketName();
 
   const filename = key.split('/').pop();
   const destKey = `players/${playerId}/${filename}`;
 
-  await client.send(
-    new CopyObjectCommand({
-      Bucket,
-      CopySource: buildCopySource(Bucket, key),
-      Key: destKey,
-    }),
-  );
-  await client.send(new DeleteObjectCommand({ Bucket, Key: key }));
-
-  return { key: destKey, fileUrl: buildPublicFileUrl(destKey) };
+  return finalizeTempObject({
+    tempKey: key,
+    destKey,
+    context: { entity: 'player', playerId },
+  });
 };
 
 export const moveTempObjectToPlayerIdDocument = async ({ key, playerId }) => {
   if (!key?.startsWith('temp/')) return { key, fileUrl: buildPublicFileUrl(key) };
-  const client = r2Client();
-  const Bucket = bucketName();
 
   const filename = key.split('/').pop();
   const destKey = `players/${playerId}/id-documents/${filename}`;
 
-  await client.send(
-    new CopyObjectCommand({
-      Bucket,
-      CopySource: buildCopySource(Bucket, key),
-      Key: destKey,
-    }),
-  );
-  await client.send(new DeleteObjectCommand({ Bucket, Key: key }));
-
-  return { key: destKey, fileUrl: buildPublicFileUrl(destKey) };
+  return finalizeTempObject({
+    tempKey: key,
+    destKey,
+    context: { entity: 'playerIdDocument', playerId },
+  });
 };
 
 export const moveTempObjectToNews = async ({ key, newsId }) => {
   if (!key?.startsWith('temp/')) return { key, fileUrl: buildPublicFileUrl(key) };
-  const client = r2Client();
-  const Bucket = bucketName();
 
   const filename = key.split('/').pop();
   const destKey = `news/${newsId}/${filename}`;
 
-  await client.send(
-    new CopyObjectCommand({
-      Bucket,
-      CopySource: buildCopySource(Bucket, key),
-      Key: destKey,
-    }),
-  );
-  await client.send(new DeleteObjectCommand({ Bucket, Key: key }));
-
-  return { key: destKey, fileUrl: buildPublicFileUrl(destKey) };
+  return finalizeTempObject({
+    tempKey: key,
+    destKey,
+    context: { entity: 'news', newsId },
+  });
 };
 
 export const moveTempObjectToSeason = async ({ key, seasonId }) => {
   if (!key?.startsWith('temp/')) return { key, fileUrl: buildPublicFileUrl(key) };
-  const client = r2Client();
-  const Bucket = bucketName();
 
   const filename = key.split('/').pop();
   const destKey = `seasons/${seasonId}/${filename}`;
 
-  await client.send(
-    new CopyObjectCommand({
-      Bucket,
-      CopySource: buildCopySource(Bucket, key),
-      Key: destKey,
-    }),
-  );
-  await client.send(new DeleteObjectCommand({ Bucket, Key: key }));
-
-  return { key: destKey, fileUrl: buildPublicFileUrl(destKey) };
+  return finalizeTempObject({
+    tempKey: key,
+    destKey,
+    context: { entity: 'season', seasonId },
+  });
 };
 
 export const moveTempObjectToSeasonAlbum = async ({ key, seasonId, albumId }) => {
   if (!key?.startsWith('temp/')) return { key, fileUrl: buildPublicFileUrl(key) };
-  const client = r2Client();
-  const Bucket = bucketName();
 
   const filename = key.split('/').pop();
   const destKey = `seasons/${seasonId}/albums/${albumId}/${filename}`;
 
-  await client.send(
-    new CopyObjectCommand({
-      Bucket,
-      CopySource: buildCopySource(Bucket, key),
-      Key: destKey,
-    }),
-  );
-  await client.send(new DeleteObjectCommand({ Bucket, Key: key }));
-
-  return { key: destKey, fileUrl: buildPublicFileUrl(destKey) };
+  return finalizeTempObject({
+    tempKey: key,
+    destKey,
+    context: { entity: 'seasonAlbum', seasonId, albumId },
+  });
 };
 
 export const cleanupOldTempObjects = async ({ olderThanHours = 24, maxKeys = 1000 } = {}) => {
