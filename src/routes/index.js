@@ -16,6 +16,8 @@ import dashboardRoutes from './dashboardRoutes.js';
 import adminMatchRoutes from './adminMatchRoutes.js';
 import configRoutes from './configRoutes.js';
 import adminConfigRoutes from './adminConfigRoutes.js';
+import adminVideoRoutes from './adminVideoRoutes.js';
+import videoRoutes from './videoRoutes.js';
 
 const router = Router();
 
@@ -25,6 +27,7 @@ router.use('/admin/config', adminConfigRoutes);
 router.use('/admin/dashboard', dashboardRoutes);
 router.use('/admin/matches', adminMatchRoutes);
 router.use('/admin/teams', adminTeamRoutes);
+router.use('/admin/videos', adminVideoRoutes);
 router.use('/teams', teamRoutes);
 router.use('/players', playerRoutes);
 router.use('/matches', matchRoutes);
@@ -32,6 +35,7 @@ router.use('/events', eventRoutes);
 router.use('/categories', categoryRoutes);
 router.use('/seasons', seasonRoutes);
 router.use('/news', newsRoutes);
+router.use('/videos', videoRoutes);
 router.use('/standings', standingsRoutes);
 router.use('/groups', groupRoutes);
 router.use('/rounds', roundRoutes);

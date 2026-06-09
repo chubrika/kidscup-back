@@ -9,4 +9,5 @@ export { Season } from './Season.js';
 export { Group } from './Group.js';
 export { Round } from './Round.js';
 export { News } from './News.js';
+export { Video } from './Video.js';
 export { Config } from './Config.js';
