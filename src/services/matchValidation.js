@@ -1,5 +1,6 @@
 import { Round, Team } from '../models/index.js';
 import { AppError } from '../utils/AppError.js';
+import { isGroupStage } from '../constants/matchStage.js';
 
 const teamGroupId = (team) => {
   if (!team?.group) return null;
@@ -15,6 +16,8 @@ export const validateMatchTeams = async (data) => {
   if (homeTeamId && awayTeamId && String(homeTeamId) === String(awayTeamId)) {
     throw new AppError('Home and away team must be different.', 400);
   }
+
+  if (!isGroupStage(data.stage)) return;
 
   if (!groupId) return;
 

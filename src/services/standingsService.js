@@ -1,4 +1,5 @@
 import { Group, Match, Team } from '../models/index.js';
+import { groupStageQueryFilter, isGroupStage } from '../constants/matchStage.js';
 
 const sortStandings = (rows) =>
   rows.sort((a, b) => {
@@ -52,6 +53,7 @@ const isApprovedTeam = (team) => {
 /** Add teams from matches (any status) so the table lists participants before results exist. */
 function seedTeamsFromRosterMatches(teamMap, rosterMatches, { groupId = null } = {}) {
   for (const m of rosterMatches) {
+    if (!isGroupStage(m.stage)) continue;
     if (groupId) {
       const matchGroup = m.group?._id?.toString() || m.group?.toString();
       if (!matchGroup || matchGroup !== groupId) continue;
@@ -78,6 +80,7 @@ function buildStandingsFromTeamsAndMatches(teams, matches, { groupId = null, ros
   seedTeamsFromRosterMatches(teamMap, rosterMatches, { groupId });
 
   for (const m of matches) {
+    if (!isGroupStage(m.stage)) continue;
     if (m.status !== 'finished') continue;
     if (groupId) {
       const matchGroup = m.group?._id?.toString() || m.group?.toString();
@@ -127,6 +130,7 @@ async function getLegacyCategoryStandings(ageCategoryId, seasonId) {
   const baseMatchFilter = {
     ...(ageCategoryId && { ageCategory: ageCategoryId }),
     ...(seasonId && { season: seasonId }),
+    ...groupStageQueryFilter(),
   };
 
   const [finishedMatches, rosterMatches] = await Promise.all([
@@ -154,6 +158,7 @@ async function getLegacyCategoryStandings(ageCategoryId, seasonId) {
   }
 
   for (const m of rosterMatches) {
+    if (!isGroupStage(m.stage)) continue;
     const catId = m.ageCategory?._id?.toString() || 'uncategorized';
     const catName = m.ageCategory?.name || 'Uncategorized';
     if (!byCategory.has(catId)) {
@@ -171,6 +176,7 @@ async function getLegacyCategoryStandings(ageCategoryId, seasonId) {
   }
 
   for (const m of finishedMatches) {
+    if (!isGroupStage(m.stage)) continue;
     const catId = m.ageCategory?._id?.toString() || 'uncategorized';
     const catName = m.ageCategory?.name || 'Uncategorized';
     if (!byCategory.has(catId)) {
@@ -217,6 +223,7 @@ async function loadTeamsAndMatches({ ageCategoryId, seasonId, groupId }) {
     ...(ageCategoryId && { ageCategory: ageCategoryId }),
     ...(seasonId && { season: seasonId }),
     ...(groupId && { group: groupId }),
+    ...groupStageQueryFilter(),
   };
 
   const [teams, finishedMatches, rosterMatches] = await Promise.all([
@@ -246,6 +253,7 @@ export const getOverallStandings = async (ageCategoryId = null, seasonId = null)
     status: 'finished',
     ...(ageCategoryId && { ageCategory: ageCategoryId }),
     ...(seasonId && { season: seasonId }),
+    ...groupStageQueryFilter(),
   };
 
   const [teams, matches] = await Promise.all([
@@ -257,6 +265,7 @@ export const getOverallStandings = async (ageCategoryId = null, seasonId = null)
     ...(ageCategoryId && { ageCategory: ageCategoryId }),
     ...(seasonId && { season: seasonId }),
     status: { $nin: ['cancelled'] },
+    ...groupStageQueryFilter(),
   })
     .populate('homeTeam awayTeam group')
     .lean();

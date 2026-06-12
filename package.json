@@ -9,6 +9,7 @@
     "dev": "node --watch src/index.js",
     "seed": "node src/scripts/seed.js",
     "migrate:groups": "node src/scripts/migrate-groups-rounds.js",
+    "migrate:match-stage": "node src/scripts/migrate-match-stage.js",
     "test": "node --test src/scripts/standingsService.test.js"
   },
   "keywords": [

@@ -3,6 +3,7 @@ import { body, param } from 'express-validator';
 import * as matchController from '../controllers/matchController.js';
 import * as matchEventController from '../controllers/matchEventController.js';
 import { protect, validate } from '../middleware/index.js';
+import { MATCH_STAGES } from '../constants/matchStage.js';
 
 const router = Router();
 
@@ -28,6 +29,7 @@ const createValidation = [
   body('season').optional().isMongoId().withMessage('Invalid season ID'),
   body('group').optional().isMongoId().withMessage('Invalid group ID'),
   body('round').optional().isMongoId().withMessage('Invalid round ID'),
+  body('stage').optional().isIn(MATCH_STAGES).withMessage('Invalid stage'),
   body('refereesInfo').optional().isString(),
   body('status').optional().isIn(['scheduled', 'live', 'finished', 'postponed', 'cancelled']).withMessage('Invalid status'),
   body('scoreHome').optional().isInt({ min: 0 }),
@@ -45,6 +47,7 @@ const updateValidation = [
   body('season').optional().isMongoId(),
   body('group').optional().isMongoId(),
   body('round').optional().isMongoId(),
+  body('stage').optional().isIn(MATCH_STAGES),
   body('refereesInfo').optional().isString(),
   body('status').optional().isIn(['scheduled', 'live', 'finished', 'postponed', 'cancelled']),
   body('scoreHome').optional().isInt({ min: 0 }),

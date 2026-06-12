@@ -33,11 +33,16 @@ function finalizeRow(row) {
   };
 }
 
+function isGroupStage(stage) {
+  return !stage || stage === 'GROUP';
+}
+
 function buildStandings(teams, finishedMatches, groupId, rosterMatches = finishedMatches) {
   const teamMap = new Map();
   for (const t of teams) teamMap.set(t.id, initTeamRow(t.id, t.name));
 
   for (const m of rosterMatches) {
+    if (!isGroupStage(m.stage)) continue;
     if (groupId && m.groupId !== groupId) continue;
     for (const id of [m.homeId, m.awayId]) {
       if (!teamMap.has(id)) {
@@ -48,6 +53,7 @@ function buildStandings(teams, finishedMatches, groupId, rosterMatches = finishe
   }
 
   for (const m of finishedMatches) {
+    if (!isGroupStage(m.stage)) continue;
     if (m.status !== 'finished') continue;
     if (groupId && m.groupId !== groupId) continue;
 
@@ -120,5 +126,18 @@ describe('standings (unit)', () => {
     const g1 = buildStandings(teams, matches, 'g1');
     const row = g1.find((r) => r.teamId === 't1');
     assert.equal(row.played, row.won + row.lost);
+  });
+
+  it('excludes semifinal and final matches from standings', () => {
+    const matches = [
+      { homeId: 't1', awayId: 't2', groupId: 'g1', status: 'finished', scoreHome: 10, scoreAway: 8 },
+      { homeId: 't1', awayId: 't3', groupId: 'g1', stage: 'SEMIFINAL', status: 'finished', scoreHome: 50, scoreAway: 0 },
+      { homeId: 't2', awayId: 't3', groupId: 'g1', stage: 'FINAL', status: 'finished', scoreHome: 30, scoreAway: 25 },
+    ];
+    const g1 = buildStandings(teams, matches, 'g1');
+    const row1 = g1.find((r) => r.teamId === 't1');
+    assert.equal(row1.played, 1);
+    assert.equal(row1.pointsFor, 10);
+    assert.equal(g1.find((r) => r.teamId === 't3')?.played ?? 0, 0);
   });
 });

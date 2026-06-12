@@ -16,13 +16,14 @@ export const getMatchesForToday = async () => {
 };
 
 export const getMatches = async (query = {}) => {
-  const { ageCategory, status, seasonId, from, to, groupId, roundId, teamId } = query;
+  const { ageCategory, status, seasonId, from, to, groupId, roundId, teamId, stage } = query;
   const filter = {};
   if (ageCategory) filter.ageCategory = ageCategory;
   if (status) filter.status = status;
   if (seasonId) filter.season = seasonId;
   if (groupId) filter.group = groupId;
   if (roundId) filter.round = roundId;
+  if (stage) filter.stage = stage;
   if (from || to) {
     filter.date = {};
     if (from) filter.date.$gte = new Date(from);
@@ -60,6 +61,7 @@ export const updateMatch = async (id, data) => {
     awayTeam: data.awayTeam ?? existing.awayTeam,
     group: data.group !== undefined ? data.group : existing.group,
     round: data.round !== undefined ? data.round : existing.round,
+    stage: data.stage ?? existing.stage,
   };
   await validateMatchTeams(merged);
   const match = await Match.findByIdAndUpdate(id, data, {

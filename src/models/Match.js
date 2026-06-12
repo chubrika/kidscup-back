@@ -1,4 +1,5 @@
 import mongoose from 'mongoose';
+import { MATCH_STAGES, DEFAULT_MATCH_STAGE } from '../constants/matchStage.js';
 
 const matchStatuses = ['scheduled', 'live', 'finished', 'postponed', 'cancelled'];
 
@@ -42,6 +43,11 @@ const matchSchema = new mongoose.Schema(
       type: mongoose.Schema.Types.ObjectId,
       ref: 'Round',
     },
+    stage: {
+      type: String,
+      enum: MATCH_STAGES,
+      default: DEFAULT_MATCH_STAGE,
+    },
     status: {
       type: String,
       enum: matchStatuses,
@@ -67,5 +73,6 @@ const matchSchema = new mongoose.Schema(
 
 matchSchema.index({ date: 1, ageCategory: 1 });
 matchSchema.index({ group: 1, round: 1 });
+matchSchema.index({ stage: 1, season: 1 });
 
 export const Match = mongoose.model('Match', matchSchema);
